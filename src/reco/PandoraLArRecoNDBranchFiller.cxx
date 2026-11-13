@@ -325,10 +325,12 @@ namespace cafmaker
    const long mcId = (m_mcLocalIdVect != nullptr) ? (*m_mcLocalIdVect)[i] : 0;
    const int isPrimary = (m_isPrimaryVect != nullptr) ? (*m_isPrimaryVect)[i] : -1;
 
+
    if (isPrimary == 1)
    {
      truePartID.type = caf::TrueParticleID::kPrimary;
      truePartID.part = mcId;
+  
    }
    else if (isPrimary == -1)
    {
@@ -351,6 +353,7 @@ namespace cafmaker
       // If the particle is not a primary, we might want to create a new particle if it wasn't created originally
       if (isPrimary != 1)
       {
+        [[maybe_unused]] caf::SRTrueParticle & srTruePart = truthMatch->GetTrueParticle(sr, srTrueInt, mcId, false, true);
         const auto pred = [&mcId](const caf::SRTrueParticle &part)
         { return part.G4ID == mcId; };
         truePartID.part = std::distance(srTrueInt.sec.begin(),
@@ -582,10 +585,11 @@ namespace cafmaker
       else if (isPrimary == -1)
       {
         truePartID.type = caf::TrueParticleID::kUnknown;
+       
       }
       else
       {
-        truePartID.type = caf::TrueParticleID::kSecondary;
+         truePartID.type = caf::TrueParticleID::kSecondary;
       }
 
       if (mcNuId != 0)
@@ -601,7 +605,9 @@ namespace cafmaker
         // If the particle is not a primary, we might want to create a new particle if it wasn't created originally
         if (isPrimary != 1)
         {
-          const auto pred = [&mcId](const caf::SRTrueParticle &part)
+          
+        [[maybe_unused]] caf::SRTrueParticle & srTruePart = truthMatch->GetTrueParticle(sr, srTrueInt, mcId, false, true);
+           const auto pred = [&mcId](const caf::SRTrueParticle &part)
           { return part.G4ID == mcId; };
           truePartID.part = std::distance(srTrueInt.sec.begin(),
                                           std::find_if(srTrueInt.sec.begin(), srTrueInt.sec.end(), pred));
@@ -707,7 +713,7 @@ namespace cafmaker
           recoParticle.start = shower.start;    
           recoParticle.p = shower.direction * shower.Evis; 
           recoParticle.contained = false; // TODO read from dedicated branch
-          recoParticle.walldist = -999.; // TODO read from dedicated branch
+          recoParticle.walldist = -999.; // TODO read from dedicated branch/
 
           // assign PDG to recoParticle
           if ((*m_trackScoreVect)[i] >= m_TrackShowerCut) 
@@ -747,9 +753,7 @@ namespace cafmaker
 
           sr.nd.lar.pandora[nuIndex].showers.emplace_back(std::move(shower));
           sr.nd.lar.pandora[nuIndex].nshowers++;
-
         }
-
         LOG.DEBUG() << "trackScore "      << (*m_trackScoreVect)[i] 
                     << ", is track? "     << ((*m_trackScoreVect)[i] > 0.5)
                     << ", is shower? "    << ((*m_trackScoreVect)[i] < 0.5)
